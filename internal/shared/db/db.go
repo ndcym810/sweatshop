@@ -121,7 +121,7 @@ func runMigrations() error {
 		created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
 		last_active_at DATETIME,
 		FOREIGN KEY (team_id) REFERENCES teams(id) ON DELETE CASCADE,
-		FOREIGN KEY (department_id) REFERENCES departments(id) ON DELETE SET NULL
+		FOREIGN KEY (department_id) REFERENCES departments(id) ON DELETE CASCADE
 	);
 
 	-- Tasks
