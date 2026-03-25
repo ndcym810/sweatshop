@@ -6,6 +6,7 @@ import {
   HeadContent,
   Scripts,
 } from '@tanstack/react-router'
+import { MainLayout } from '../shared/components/layout/main-layout'
 import '../index.css'
 
 export const Route = createRootRoute({
@@ -29,18 +30,20 @@ export const Route = createRootRoute({
 function RootComponent() {
   return (
     <RootDocument>
-      <Outlet />
+      <MainLayout>
+        <Outlet />
+      </MainLayout>
     </RootDocument>
   )
 }
 
 function RootDocument({ children }: Readonly<{ children: ReactNode }>) {
   return (
-    <html lang="en">
+    <html lang="en" className="dark">
       <head>
         <HeadContent />
       </head>
-      <body className="dark">
+      <body>
         {children}
         <Scripts />
       </body>
