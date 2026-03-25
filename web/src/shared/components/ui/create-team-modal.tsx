@@ -1,17 +1,19 @@
 import { useState } from 'react'
-import { X } from 'lucide-react'
+import { X, AlertCircle } from 'lucide-react'
 import { Button } from './button'
 
 interface CreateTeamModalProps {
   isOpen: boolean
   onClose: () => void
-  onSubmit: (data: { name: string; description: string }) => void
+  onSubmit: (data: { name: string; description: string }) => Promise<void>
+  error?: string | null
 }
 
-export function CreateTeamModal({ isOpen, onClose, onSubmit }: CreateTeamModalProps) {
+export function CreateTeamModal({ isOpen, onClose, onSubmit, error }: CreateTeamModalProps) {
   const [name, setName] = useState('')
   const [description, setDescription] = useState('')
   const [isSubmitting, setIsSubmitting] = useState(false)
+  const [localError, setLocalError] = useState<string | null>(null)
 
   if (!isOpen) return null
 
@@ -19,16 +21,21 @@ export function CreateTeamModal({ isOpen, onClose, onSubmit }: CreateTeamModalPr
     e.preventDefault()
     if (!name.trim()) return
 
+    setLocalError(null)
     setIsSubmitting(true)
     try {
       await onSubmit({ name: name.trim(), description: description.trim() })
       setName('')
       setDescription('')
       onClose()
+    } catch (err) {
+      setLocalError((err as Error).message)
     } finally {
       setIsSubmitting(false)
     }
   }
+
+  const displayError = localError || error
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center">
@@ -40,6 +47,13 @@ export function CreateTeamModal({ isOpen, onClose, onSubmit }: CreateTeamModalPr
             <X className="h-4 w-4" />
           </Button>
         </div>
+
+        {displayError && (
+          <div className="mb-4 flex items-center gap-2 rounded-md bg-destructive/10 p-3 text-sm text-destructive">
+            <AlertCircle className="h-4 w-4 shrink-0" />
+            <span>{displayError}</span>
+          </div>
+        )}
 
         <form onSubmit={handleSubmit}>
           <div className="space-y-4">

@@ -24,6 +24,7 @@ interface TeamState {
   fetchTeams: () => Promise<void>
   setSelectedTeam: (id: string | null) => void
   addTeam: (input: CreateTeamInput) => Promise<void>
+  clearError: () => void
   fetchProjects: (teamId: string) => Promise<void>
   fetchDepartments: (teamId: string) => Promise<void>
   fetchTasks: (teamId: string) => Promise<void>
@@ -74,8 +75,11 @@ export const useTeamStore = create<TeamState>((set, get) => ({
       set({ selectedTeamId: team.id })
     } catch (error) {
       set({ error: (error as Error).message, isLoading: false })
+      throw error
     }
   },
+
+  clearError: () => set({ error: null }),
 
   fetchProjects: async (teamId: string) => {
     try {

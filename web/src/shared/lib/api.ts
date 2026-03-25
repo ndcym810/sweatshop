@@ -1,5 +1,5 @@
 // API base URL - can be configured via environment at build time
-const API_BASE = 'http://localhost:8080/api'
+const API_BASE = 'http://localhost:8000/api'
 
 async function request<T>(
   path: string,

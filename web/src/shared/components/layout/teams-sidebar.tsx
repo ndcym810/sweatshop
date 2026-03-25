@@ -1,17 +1,22 @@
 import { useState } from 'react'
-import { Plus, ChevronLeft, ChevronRight, Loader2 } from 'lucide-react'
+import { Plus, ChevronLeft, ChevronRight, Loader2, AlertCircle } from 'lucide-react'
 import { Button } from '../ui/button'
 import { CreateTeamModal } from '../ui/create-team-modal'
 import { useTeamStore, useUIStore } from '../../stores'
 import { cn } from '../../lib/utils'
 
 export function TeamsSidebar() {
-  const { teams, selectedTeamId, setSelectedTeam, isLoading, addTeam } = useTeamStore()
+  const { teams, selectedTeamId, setSelectedTeam, isLoading, addTeam, error, clearError } = useTeamStore()
   const { sidebarCollapsed, toggleSidebar } = useUIStore()
   const [isModalOpen, setIsModalOpen] = useState(false)
 
   const handleCreateTeam = async (data: { name: string; description: string }) => {
     await addTeam(data)
+  }
+
+  const handleModalClose = () => {
+    setIsModalOpen(false)
+    clearError()
   }
 
   return (
@@ -54,6 +59,14 @@ export function TeamsSidebar() {
               </Button>
             </div>
 
+            {/* Show connection error */}
+            {error && !isModalOpen && (
+              <div className="mx-2 mb-2 flex items-center gap-2 rounded-md bg-destructive/10 p-2 text-xs text-destructive">
+                <AlertCircle className="h-3 w-3 shrink-0" />
+                <span className="truncate">{error}</span>
+              </div>
+            )}
+
             <div className="flex-1 overflow-auto p-2">
               {isLoading ? (
                 <div className="flex items-center justify-center py-4">
@@ -75,10 +88,10 @@ export function TeamsSidebar() {
                       <span className="truncate">{team.name}</span>
                     </button>
                   ))}
-                  {teams.length === 0 && (
+                  {teams.length === 0 && !error && (
                     <p className="px-2 py-4 text-center text-sm text-muted-foreground">
-                    No teams yet
-                  </p>
+                      No teams yet
+                    </p>
                   )}
                 </>
               )}
@@ -89,8 +102,9 @@ export function TeamsSidebar() {
 
       <CreateTeamModal
         isOpen={isModalOpen}
-        onClose={() => setIsModalOpen(false)}
+        onClose={handleModalClose}
         onSubmit={handleCreateTeam}
+        error={error}
       />
     </>
   )
