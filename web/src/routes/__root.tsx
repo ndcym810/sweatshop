@@ -1,4 +1,5 @@
 /// <reference types="vite/client" />
+import { useEffect } from 'react'
 import type { ReactNode } from 'react'
 import {
   Outlet,
@@ -7,6 +8,7 @@ import {
   Scripts,
 } from '@tanstack/react-router'
 import { MainLayout } from '../shared/components/layout/main-layout'
+import { useTeamStore } from '../shared/stores'
 import '../index.css'
 
 export const Route = createRootRoute({
@@ -28,6 +30,12 @@ export const Route = createRootRoute({
 })
 
 function RootComponent() {
+  const fetchTeams = useTeamStore((state) => state.fetchTeams)
+
+  useEffect(() => {
+    fetchTeams()
+  }, [fetchTeams])
+
   return (
     <RootDocument>
       <MainLayout>

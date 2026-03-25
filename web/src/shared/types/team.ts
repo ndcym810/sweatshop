@@ -1,30 +1,20 @@
-export interface Team {
-  id: string
-  name: string
-  description: string
-  leadRuntimeType: string
-  leadRuntimeModel: string
-  createdAt: string
-  updatedAt: string
-}
+// Re-export types from api.ts for backwards compatibility
+export type {
+  Team,
+  Project,
+  Task,
+  Department,
+  CreateTeamInput,
+  UpdateTeamInput,
+  CreateProjectInput,
+  UpdateProjectInput,
+  CreateTaskInput,
+  UpdateTaskInput,
+  CreateDepartmentInput,
+  UpdateDepartmentInput,
+} from '../lib/api'
 
-export interface Project {
-  id: string
-  teamId: string
-  name: string
-  path: string
-  defaultBranch: string
-  isActive: boolean
-}
-
-export interface Department {
-  id: string
-  teamId: string
-  name: string
-  description: string
-  sortOrder: number
-}
-
+// Teammate type - not yet implemented in backend
 export interface Teammate {
   id: string
   teamId: string
@@ -32,15 +22,4 @@ export interface Teammate {
   templateId: string
   name: string
   status: 'idle' | 'running' | 'stopped' | 'error'
-}
-
-export interface Task {
-  id: string
-  teamId: string
-  projectId: string | null
-  assignedTo: string | null
-  title: string
-  description: string
-  status: 'pending' | 'in_progress' | 'completed' | 'blocked'
-  priority: 'low' | 'medium' | 'high'
 }
