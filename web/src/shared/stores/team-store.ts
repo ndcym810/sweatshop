@@ -8,7 +8,8 @@ import {
   type Project,
   type Task,
   type Department,
-  type CreateTeamInput
+  type CreateTeamInput,
+  type CreateDepartmentInput
 } from '../lib/api'
 
 interface TeamState {
@@ -24,6 +25,7 @@ interface TeamState {
   fetchTeams: () => Promise<void>
   setSelectedTeam: (id: string | null) => void
   addTeam: (input: CreateTeamInput) => Promise<void>
+  addDepartment: (input: CreateDepartmentInput) => Promise<void>
   clearError: () => void
   fetchProjects: (teamId: string) => Promise<void>
   fetchDepartments: (teamId: string) => Promise<void>
@@ -80,6 +82,21 @@ export const useTeamStore = create<TeamState>((set, get) => ({
   },
 
   clearError: () => set({ error: null }),
+
+  addDepartment: async (input) => {
+    const { selectedTeamId } = get()
+    if (!selectedTeamId) {
+      throw new Error('No team selected')
+    }
+    set({ isLoading: true, error: null })
+    try {
+      const department = await departmentApi.create(selectedTeamId, input)
+      set((state) => ({ departments: [...state.departments, department], isLoading: false }))
+    } catch (error) {
+      set({ error: (error as Error).message, isLoading: false })
+      throw error
+    }
+  },
 
   fetchProjects: async (teamId: string) => {
     try {
