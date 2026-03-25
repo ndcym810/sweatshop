@@ -14,7 +14,7 @@ import (
 )
 
 func main() {
-	port := flag.Int("port", 8080, "Server port")
+	port := flag.Int("port", 8000, "Server port")
 	dataPath := flag.String("data", "./data", "Data directory path")
 	flag.Parse()
 
