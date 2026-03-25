@@ -1,5 +1,15 @@
 import { create } from 'zustand'
-import { teamApi, projectApi, taskApi, departmentApi, type Team, type Project, type Task, type Department } from '../lib/api'
+import {
+  teamApi,
+  projectApi,
+  taskApi,
+  departmentApi,
+  type Team,
+  type Project,
+  type Task,
+  type Department,
+  type CreateTeamInput
+} from '../lib/api'
 
 interface TeamState {
   teams: Team[]
@@ -13,7 +23,7 @@ interface TeamState {
   // Actions
   fetchTeams: () => Promise<void>
   setSelectedTeam: (id: string | null) => void
-  addTeam: (team: Omit<Team, 'id' | 'createdAt' | 'updatedAt'>) => Promise<void>
+  addTeam: (input: CreateTeamInput) => Promise<void>
   fetchProjects: (teamId: string) => Promise<void>
   fetchDepartments: (teamId: string) => Promise<void>
   fetchTasks: (teamId: string) => Promise<void>
@@ -46,7 +56,7 @@ export const useTeamStore = create<TeamState>((set, get) => ({
     }
   },
 
-  setSelectedTeam: async (id) => {
+  setSelectedTeam: (id) => {
     set({ selectedTeamId: id })
     if (id) {
       get().fetchProjects(id)
@@ -60,6 +70,8 @@ export const useTeamStore = create<TeamState>((set, get) => ({
     try {
       const team = await teamApi.create(input)
       set((state) => ({ teams: [...state.teams, team], isLoading: false }))
+      // Auto-select the new team
+      set({ selectedTeamId: team.id })
     } catch (error) {
       set({ error: (error as Error).message, isLoading: false })
     }
