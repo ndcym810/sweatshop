@@ -47,10 +47,10 @@ export function TeamsSidebar() {
                 key={team.id}
                 onClick={() => setSelectedTeam(team.id)}
                 className={cn(
-                  'flex w-full items-center rounded-md px-2 py-1.5 text-sm transition-colors',
+                  'flex w-full items-center rounded-md px-2 py-1.5 text-sm transition-colors cursor-pointer',
                   selectedTeamId === team.id
                     ? 'bg-accent text-accent-foreground'
-                    : 'hover:bg-accent/50'
+                    : 'hover:bg-accent'
                 )}
               >
                 <span className="truncate">{team.name}</span>
