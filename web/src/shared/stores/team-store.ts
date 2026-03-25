@@ -1,5 +1,6 @@
 import { create } from 'zustand'
 import type { Team, Project, Department, Teammate, Task } from '../types/team'
+import { mockTeams, mockProjects, mockDepartments, mockTeammates, mockTasks } from '../lib/mock-data'
 
 interface TeamState {
   teams: Team[]
@@ -16,12 +17,13 @@ interface TeamState {
 }
 
 export const useTeamStore = create<TeamState>((set) => ({
-  teams: [],
-  selectedTeamId: null,
-  projects: [],
-  departments: [],
-  teammates: [],
-  tasks: [],
+  // Initialize with mock data
+  teams: mockTeams,
+  selectedTeamId: 'team-1',
+  projects: mockProjects,
+  departments: mockDepartments,
+  teammates: mockTeammates,
+  tasks: mockTasks,
 
   setSelectedTeam: (id) => set({ selectedTeamId: id }),
 
