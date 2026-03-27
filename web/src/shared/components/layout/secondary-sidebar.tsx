@@ -1,8 +1,9 @@
 import { useState } from 'react'
-import { Plus, ChevronDown, ChevronRight, Users, Loader2 } from 'lucide-react'
+import { Plus, ChevronDown, ChevronRight, Users, Loader2, Bot, Radio } from 'lucide-react'
 import { Button } from '../ui/button'
 import { CreateDepartmentModal } from '../ui/create-department-modal'
-import { useUIStore, useTeamStore } from '../../stores'
+import { useUIStore, useTeamStore, useClaudeTeamStore } from '../../stores'
+import { useWebSocket } from '../../lib/use-websocket'
 import { cn } from '../../lib/utils'
 import type { Department } from '../../lib/api'
 
@@ -12,11 +13,19 @@ const tabs = [
   { id: 'lead' as const, label: 'Lead' },
 ]
 
+const sidebarModes = ['db-teams', 'claude-teams'] as const
+type SidebarMode = typeof sidebarModes[number]
+
 export function SecondarySidebar() {
   const { activeTab, setActiveTab } = useUIStore()
   const { departments, selectedTeamId, isLoading, addDepartment, error, clearError } = useTeamStore()
+  const { teams: claudeTeams, selectedTeam: selectedClaudeTeam, wsConnected, fetchTeams, selectTeam, clearSelection, isLoading: claudeLoading } = useClaudeTeamStore()
   const [expandedDepts, setExpandedDepts] = useState<Set<string>>(new Set())
   const [isDeptModalOpen, setIsDeptModalOpen] = useState(false)
+  const [mode, setMode] = useState<SidebarMode>('db-teams')
+
+  // Establish WebSocket connection for real-time updates
+  useWebSocket()
 
   const toggleDept = (deptId: string) => {
     const newExpanded = new Set(expandedDepts)
@@ -36,10 +45,99 @@ export function SecondarySidebar() {
     }
   }
 
+  // Fetch Claude teams when switching to that mode
+  const handleModeChange = (newMode: SidebarMode) => {
+    setMode(newMode)
+    if (newMode === 'claude-teams') {
+      fetchTeams()
+    } else {
+      // Clear selected Claude team when switching back to DB teams
+      clearSelection()
+    }
+  }
+
   return (
     <>
       <div className="flex w-64 flex-col border-r">
+        {/* Mode switcher tabs */}
         <div className="flex border-b">
+          <button
+            onClick={() => handleModeChange('db-teams')}
+            className={cn(
+              'flex-1 px-3 py-2 text-xs font-medium transition-colors',
+              mode === 'db-teams'
+                ? 'border-b-2 border-primary text-primary'
+                : 'text-muted-foreground hover:text-foreground'
+            )}
+          >
+            DB Teams
+          </button>
+          <button
+            onClick={() => handleModeChange('claude-teams')}
+            className={cn(
+              'flex-1 px-3 py-2 text-xs font-medium transition-colors flex items-center justify-center gap-1',
+              mode === 'claude-teams'
+                ? 'border-b-2 border-primary text-primary'
+                : 'text-muted-foreground hover:text-foreground'
+            )}
+          >
+            Claude Teams
+            <div
+              className={cn(
+                'h-2 w-2 rounded-full',
+                wsConnected ? 'bg-green-500' : 'bg-gray-400'
+              )}
+              title={wsConnected ? 'Connected' : 'Disconnected'}
+            />
+          </button>
+        </div>
+
+        {/* Claude Teams mode */}
+        {mode === 'claude-teams' && (
+          <div className="flex-1 overflow-auto">
+            <div className="p-2">
+              <span className="text-xs font-medium text-muted-foreground uppercase tracking-wider">
+                Discovered Teams
+              </span>
+            </div>
+            {claudeLoading && claudeTeams.length === 0 ? (
+              <div className="flex items-center justify-center py-4">
+                <Loader2 className="h-4 w-4 animate-spin text-muted-foreground" />
+              </div>
+            ) : claudeTeams.length === 0 ? (
+              <div className="p-4 text-center">
+                <Bot className="mx-auto mb-2 h-8 w-8 opacity-50" />
+                <p className="text-sm text-muted-foreground">No Claude teams found</p>
+                <p className="mt-1 text-xs text-muted-foreground">
+                  Spawn a team using <code className="rounded bg-muted px-1">claude --teammate</code>
+                </p>
+              </div>
+            ) : (
+              <div className="space-y-1 p-2">
+                {claudeTeams.map((teamName) => (
+                  <button
+                    key={teamName}
+                    onClick={() => selectTeam(teamName)}
+                    className={cn(
+                      'flex w-full items-center gap-2 rounded-md px-2 py-1.5 text-sm transition-colors',
+                      selectedClaudeTeam?.name === teamName
+                        ? 'bg-accent text-accent-foreground'
+                        : 'hover:bg-accent'
+                    )}
+                  >
+                    <Bot className="h-4 w-4" />
+                    <span className="truncate">{teamName}</span>
+                  </button>
+                ))}
+              </div>
+            )}
+          </div>
+        )}
+
+        {/* DB Teams mode (original) */}
+        {mode === 'db-teams' && (
+          <>
+            <div className="flex border-b">
           {tabs.map((tab) => (
             <button
               key={tab.id}
@@ -87,7 +185,7 @@ export function SecondarySidebar() {
                 <div className="flex items-center justify-center py-4">
                   <Loader2 className="h-4 w-4 animate-spin text-muted-foreground" />
                 </div>
-              ) : departments.length === 0 ? (
+              ) : !departments || departments.length === 0 ? (
                 <p className="px-2 py-4 text-center text-sm text-muted-foreground">
                   No departments yet
                 </p>
@@ -112,6 +210,8 @@ export function SecondarySidebar() {
             </div>
           )}
         </div>
+          </>
+        )}
       </div>
 
       <CreateDepartmentModal

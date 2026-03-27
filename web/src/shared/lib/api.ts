@@ -175,3 +175,48 @@ export const taskApi = {
     body: JSON.stringify(data),
   }),
 }
+
+// Claude Team API (Claude Code agent teams)
+export interface ClaudeTeam {
+  name: string
+  description: string
+  members: ClaudeMember[]
+}
+
+export interface ClaudeMember {
+  agentId: string
+  name: string
+  agentType: string
+  model: string
+  status: string
+}
+
+export interface InboxMessage {
+  from: string
+  text: string
+  summary: string
+  timestamp: string
+  color: string
+  read: boolean
+}
+
+export interface SendMessageInput {
+  to: string
+  message: string
+}
+
+export const claudeTeamApi = {
+  list: () => request<string[]>('/claude-teams'),
+  get: (name: string) => request<ClaudeTeam>(`/claude-teams/${name}`),
+  getInbox: (teamName: string, agentName: string) =>
+    request<InboxMessage[]>(`/claude-teams/${teamName}/inbox/${agentName}`),
+  sendMessage: (teamName: string, data: SendMessageInput) =>
+    request<{ status: string }>(`/claude-teams/${teamName}/message`, {
+      method: 'POST',
+      body: JSON.stringify(data),
+    }),
+  markRead: (teamName: string, agentName: string, timestamp: string) =>
+    request<void>(`/claude-teams/${teamName}/inbox/${agentName}/${encodeURIComponent(timestamp)}`, {
+      method: 'DELETE',
+    }),
+}
